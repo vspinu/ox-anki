@@ -1,13 +1,17 @@
-# Org Anki Exporter
+(this project is in a very early alpha stage)
 
-To use put the following into your .emacs
+# [Org-mode](http://orgmode.org/) to [Anki](http://ankisrs.net/) Exporter
 
+Put the following into your .emacs:
+
+```lisp
  (require 'ox-anki)
+```
 
-and then export with `C-c C-e a b` or `C-c C-e a f` from an org buffer.
+In order to export press `C-c C-e a b` or `C-c C-e a f` from an org-mode buffer.
 
 The exported format is tab separated text file which is ready for Anki
-import. The text file contains 4 columns: ID, Question, Answer, TAGS
+import. The output file contains 4 columns: ID, Question, Answer, TAGS.
 
 ## Writing questions in Org form
 
