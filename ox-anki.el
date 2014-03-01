@@ -43,11 +43,35 @@
                      (section . org-anki-section)
                      (template . nil)
                      (inner-template . nil))
+;;  :filters-alist '((:filter-parse-tree . org-anki-replicate-headlines))
   :menu-entry
   '(?a "Export to Anki"
        ((?b "As tab separated Buffer" org-anki-export-to-buffer)
 	(?f "As tab separated File" org-anki-export-to-file))))
 
+;; (defun org-anki-replicate-headlines (tree backend info)
+;;   "Linearize (replicate) headers up to
+;;   `org-export-headline-levels'."
+;;   (let ((level 1))
+;;    (dolist (el (cdr tree))
+;;      (if (eq 'headline (org-element-type el))
+;;          (org-anki--replicate-headline el)))
+;;    tree))
+
+;; (defun org-anki--copy-element (element)
+;;   (let ((new (copy-sequence element)))
+;;     ;; (org-element-put-property new :parent nil)
+;;     new))
+
+;; (defun org-anki--replicate-headline (headline)
+;;   (let ((new-h (org-anki--copy-element headline)))
+;;     (org-element-set-contents new-h))
+;;   (let ((tt (dolist (h (cddr headline))
+;;               (when (eq 'headline (org-element-type h))
+;;                 (let ((new-h1 (org-anki--copy-element new-h)))
+;;                   (apply #'org-element-set-contents new-h1
+;;                          (org-element-contents new-h1 ))
+;;                   (org-anki--copy-element h))))))))
 
 (defun org-anki-headline (headline contents info)
   "Transcode a HEADLINE element from Org to Anki csv format.
@@ -88,11 +112,13 @@ High level headlines up to `org-export-headline-levels' (see also
                              (eq last-child-level level))))
         (unless last-child-level
           (plist-put info :last-child-level level))
-        (let ((front (concat full-text
-                             (if last-child "\t" "<br>"))))
+        (let ((front (concat full-text "\t"
+                             (unless last-child-level
+                               (make-string
+                                (max 0 (- org-export-headline-levels level)) ?\t)))))
           (when (= level 1)
             (plist-put info :last-child-level nil))
-          ;; all this mambo jambo is for replilcation of parent headlines acros
+          ;; all this mambo jambo is for replilcation of parent headlines across
           ;; the last-child headline that contains the answer
           (if last-child
               (propertize
@@ -100,7 +126,7 @@ High level headlines up to `org-export-headline-levels' (see also
                          (concat (org-element-property :ID headline) "\t"))
                        front
                        (replace-regexp-in-string "\n+" "<br>" contents)
-                       (when (not (= level 1))"!@@!"))
+                       (when (not (= level 1)) "!@@!"))
                :aid (org-element-property :ID headline))
             (mapconcat (lambda (x)
                          (replace-regexp-in-string
